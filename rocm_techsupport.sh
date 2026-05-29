@@ -7,6 +7,7 @@
 # such as dmidecode, dmesg, lspci -vvv to read capabilities.
 # Author: srinivasan.subramanian@amd.com
 # Revision: V1.41
+# V1.42: added AMD-SMI metric ecc output
 # V1.41: cleanup and add some netowrk commands
 # V1.40: add AMD-SMI support (Shaun.O'Neill@amd.com)
 # V1.39: add mce, edac
@@ -311,6 +312,21 @@ if [ -f $ROCM_VERSION/bin/amd-smi ]
 then
 	echo "===== Section: AMD SMI xgmi ==============="
 	LD_LIBRARY_PATH=$ROCM_VERSION/lib:$LD_LIBRARY_PATH $ROCM_VERSION/bin/amd-smi xgmi
+fi
+
+#AMD SMI - Displays total ecc count of the devices
+if [ -f $ROCM_VERSION/bin/amd-smi ]
+then
+	echo "===== Section: AMD SMI ecc ==============="
+	LD_LIBRARY_PATH=$ROCM_VERSION/lib:$LD_LIBRARY_PATH $ROCM_VERSION/bin/amd-smi metric -e
+fi
+
+#AMD SMI - Displays ecc error per block of the devices
+ecc-blocks
+if [ -f $ROCM_VERSION/bin/amd-smi ]
+then
+	echo "===== Section: AMD SMI ecc-blocks ==============="
+	LD_LIBRARY_PATH=$ROCM_VERSION/lib:$LD_LIBRARY_PATH $ROCM_VERSION/bin/amd-smi metric -k
 fi
 
 # ROCm SMI 

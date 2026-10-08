@@ -57,6 +57,7 @@ AMD_SMI_SUBCOMMANDS = [
 ]
 
 AMD_SMI_METRIC_COMMANDS = [
+    ("metric -t", "AMD SMI temperature"),
     ("metric -e", "AMD SMI ecc"),
     ("metric -k", "AMD SMI ecc-blocks"),
 ]
@@ -310,6 +311,15 @@ def collect_system_info(col: SectionCollector) -> None:
         col.add_output(content)
     col.end_section("OS Distribution")
 
+    col.begin_section("System Uptime")
+    uptime = find_binary("uptime")
+    if uptime:
+        rc, out, _ = run_cmd([uptime])
+        col.add_output(out.rstrip())
+    else:
+        col.add_not_found("uptime")
+    col.end_section("System Uptime")
+
     col.begin_section("Kernel Boot Parameters")
     content = read_file("/proc/cmdline")
     if content:
@@ -317,6 +327,15 @@ def collect_system_info(col: SectionCollector) -> None:
     else:
         col.add_output("Could not read /proc/cmdline")
     col.end_section("Kernel Boot Parameters")
+
+    col.begin_section("Kernel Parameters sysctl")
+    sysctl = find_binary("sysctl")
+    if sysctl:
+        rc, out, _ = run_cmd([sysctl, "-a"], timeout=30)
+        col.add_output(out.rstrip())
+    else:
+        col.add_not_found("sysctl")
+    col.end_section("Kernel Parameters sysctl")
 
     col.begin_section("CPU Information")
     lscpu = find_binary("lscpu")
@@ -335,6 +354,15 @@ def collect_system_info(col: SectionCollector) -> None:
     else:
         col.add_not_found("lsmem")
     col.end_section("Memory Information")
+
+    col.begin_section("Memory Summary")
+    meminfo = read_file("/proc/meminfo")
+    if meminfo:
+        lines = meminfo.splitlines()[:5]
+        col.add_output("\n".join(lines))
+    else:
+        col.add_output("Could not read /proc/meminfo")
+    col.end_section("Memory Summary")
 
 
 def collect_kernel_logs(col: SectionCollector) -> None:
